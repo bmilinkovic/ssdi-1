@@ -41,9 +41,9 @@ clear sdir
 
 % Initialize mvgc library with gpmat and gvmat APIs
 
-mvgc_path  = getenv('MVGC2_PATH');
-gpmat_path = getenv('GPMAT_PATH');
-gvmat_path = getenv('GVMAT_PATH');
+mvgc_path  = getenv('MVGC');
+%gpmat_path = getenv('GPMAT_PATH');
+%gvmat_path = getenv('GVMAT_PATH');
 flzc_path  = ''; % don't need this!
 assert(exist(mvgc_path,'dir') == 7,'bad MVGC path: ''%s'' does not exist or is not a directory',mvgc_path);
 run(fullfile(mvgc_path,'startup'));
