@@ -33,6 +33,10 @@ sdir = 'experimental';
 addpath(fullfile(ssdi_root,sdir));
 fprintf('[ssdi startup] Added sub-path %s\n',sdir);
 
+sdir = 'batch';
+addpath(genpath(fullfile(ssdi_root,sdir)));
+fprintf('[ssdi startup] Added sub-path %s\n',sdir);
+
 sdir = 'testing';
 addpath(genpath(fullfile(ssdi_root,sdir)));
 fprintf('[ssdi startup] Added sub-path %s\n',sdir);
@@ -48,5 +52,8 @@ flzc_path  = ''; % don't need this!
 assert(exist(mvgc_path,'dir') == 7,'bad MVGC path: ''%s'' does not exist or is not a directory',mvgc_path);
 run(fullfile(mvgc_path,'startup'));
 clear mvgc_path
+
+global local_data_dir
+local_data_dir = (fullfile(ssdi_root,'data'));
 
 fprintf('[ssdi startup] Initialised (you may re-run `startup'' at any time)\n');

@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Demonstrate calculation of coinformation (CI) and Causal Emergence (CE)
+% Demonstrate calculation of Causal Emergence (CE)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Supply model for your data (see, e.g., sim_model.m). Do not transform model to
@@ -15,14 +15,14 @@ defvar('modname', 'sim_model'  );  % model filename root
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+defvar('aclmax',   10000       ); % maximum autocovariance lags
 defvar('nsamps',   100         ); % number of sample random projections
 defvar('iseed',    0           ); % initialisation random seed (0 to use current rng state)
-defvar('precomp',  true        ); % precompute quantities which don't depend on projection (speeds up computation)?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 defvar('gpterm',  'x11'        ); % Gnuplot terminal
-defvar('gpscale',  [1.5,0.65]  ); % Gnuplot scale
+defvar('gpscale',  [1,1.2]     ); % Gnuplot scale
 defvar('gpfsize',  14          ); % Gnuplot font size
 defvar('gpplot',   2           ); % Gnuplot display? (0 - generate command files, 1 - generate image files, 2 - plot)
 
@@ -43,57 +43,61 @@ fprintf('done\n\n');
 % NOTE: all calculations in UNTRANSFORMED coordinates!!! %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Calculate transfer function
+
+if varmod
+	H = var2trfun(ARA0,fres);
+else
+	H = ss2trfun(A0,C0,K0,fres);
+end
+
+if varmod
+	[G,acl] = var_to_autocov(ARA0,V0,aclmax);
+else
+	[G,acl] = ss_to_autocov(A0,C0,K0,V0,aclmax);
+end
+
+fprintf('\n%s: CE calculation (fres = %d, aclags = %d) for m = %d\n',mdescript,fres,acl,m);
+
+fprintf('\nCalculating the Sigma_i ');
+st = tic;
+[CESRC,CLC] = ac2ces(G);
+et = toc(st);
+fprintf(' completed in %g seconds\n',et);
+
 % Random projections
 
 rstate = rng_seed(iseed);
-L = rand_orthonormal(n,mdim,nsamps); % random linear projections (orthonormalised)
+L = rand_orthonormal(n,mdim,nsamps); % (orthonormalised) untransformed random linear projections
 rng_restore(rstate);
 
-% Optionally precompute quantities which don't depend on projection (speeds up computation considerably)
+% Calculate CEs
 
-if precomp
-	[G0,P0] = iss2ce_precomp(A0,C0,K0,V0);
-else
-	G0 = [];
-	P0 = [];
-end
-
-% Calculate CI and DD
-
-CI = zeros(nsamps,1);
+CE = zeros(nsamps,1);
 DD = zeros(nsamps,1);
+VRC = chol(V0);
 npi = floor(nsamps/10); % for progress indicator
 
-fprintf('Calculating co-information and dynamical dependence ');
+fprintf('\nCalculating causal emergence and dynamical dependence ');
 st = tic;
 for i = 1:nsamps
-	[CI(i),DD(i)] = iss2ce(L(:,:,i),A0,C0,K0,V0,G0,P0);
+	[CE(i),DD(i)] = ces2ce(L(:,:,i),H,VRC,CESRC,CLC);
 	if ~mod(i,npi), fprintf('.'); end % progress indicator
 end
 et = toc(st);
 fprintf(' completed in %g seconds\n\n',et);
 
-% Calculate CE
-
-CE = CI - DD;
-
 % Plot
 
-gpname = 'CI_vs_DD';
-gpstem = fullfile(tempdir,'CI_vs_DD');
-gp_write(gpstem,[DD,CI,CE]);
+gpstem   = fullfile(tempdir,'CE_vs_DD');
+[~,gpname] = fileparts([gpstem '.xxx']); % hack to get fileparts to behave itself
+gp_write(gpstem,[DD CE]);
 gp = gp_open(gpstem,gpterm,gpscale,gpfsize);
 fprintf(gp,'datfile = "%s.dat"\n\n',gpname);
+fprintf(gp,'set title "%s: CE vs DD for m = %d"\n',mdescript,mdim);
 fprintf(gp,'unset key\n');
 fprintf(gp,'set grid\n');
 fprintf(gp,'set xlabel "DD"\n');
-fprintf(gp,'set xr [0:]\n');
-fprintf(gp,'set multiplot title "%s: macrovariable dimension = %d\\n" layout 2,1\n',mdescript,mdim);
-fprintf(gp,'set title "Co-information vs Dynamical Dependence"\n');
-fprintf(gp,'set ylabel "CI" norot\n');
-fprintf(gp,'plot datfile u 1:2 w points pt 7 ps 1 not\n');
-fprintf(gp,'set title "Causal Emergence vs Dynamical Dependence"\n');
 fprintf(gp,'set ylabel "CE" norot\n');
-fprintf(gp,'plot datfile u 1:3 w points pt 7 ps 1 not\n');
-fprintf(gp,'unset multiplot\n');
+fprintf(gp,'plot datfile u 1:2 w points pt 7 ps 1 not\n');
 gp_close(gp,gpstem,gpterm,gpplot);
