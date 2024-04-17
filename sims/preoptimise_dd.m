@@ -9,6 +9,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+defvar('mdim',    2    );
 defvar('moddir',    tempdir    );  % model directory
 defvar('modname',  'sim_model' );  % model filename root
 defvar('poptdir',   tempdir    );  % pre-optimisation directory
@@ -84,20 +85,20 @@ fprintf('CPU secs per run = %7.4f +- %6.4f\n\n',mean(cputp),std(cputp));
 
 % Plot optimisation histories
 
-if histp && ~isempty(gpterm)
-	gptitle  = sprintf('Pre-optimisation history: %s, m = %d',mdescript,m);
-	gpstem   = fullfile(tempdir,'preopt_hist');
-	gp_opthist({ohistp},nitersp,true,true,{'Pre-optimisation (GD)'},gptitle,gpstem,gpterm,gpscale,gpfsize,gpplot);
-end
+% if histp && ~isempty(gpterm)
+% 	gptitle  = sprintf('Pre-optimisation history: %s, m = %d',mdescript,m);
+% 	gpstem   = fullfile(tempdir,'preopt_hist');
+% 	gp_opthist({ohistp},nitersp,true,true,{'Pre-optimisation (GD)'},gptitle,gpstem,gpterm,gpscale,gpfsize,gpplot);
+% end
 
 % Plot inter-optima subspace distances
 
 goptp = gmetrics(Loptp);
-if ~isempty(gpterm)
-	gptitle = sprintf('Inter-preoptimum distance: %s, m = %d',mdescript,m);
-	gpstem = fullfile(tempdir,'preopt_iodist');
-	gp_iodist(goptp,gptitle,gpstem,gpterm,[1.2,1.1],gpfsize,gpplot);
-end
+% if ~isempty(gpterm)
+% 	gptitle = sprintf('Inter-preoptimum distance: %s, m = %d',mdescript,m);
+% 	gpstem = fullfile(tempdir,'preopt_iodist');
+% 	gp_iodist(goptp,gptitle,gpstem,gpterm,[1.2,1.1],gpfsize,gpplot);
+% end
 
 % Save pre-optimisation results
 

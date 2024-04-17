@@ -78,12 +78,12 @@ fprintf('---------------------------------------\n\n');
 
 % Optionally display causal graph
 
-if ~isempty(gvdisp)
-	eweight = gc/nanmax(gc(:));
-	gfile = fullfile(tempdir,'sim_model');
-	wgraph2dot(n,eweight,gfile,[],gvprog,gvdisp);
-	fprintf('\n');
-end
+% if ~isempty(gvdisp)
+% 	eweight = gc/nanmax(gc(:));
+% 	gfile = fullfile(tempdir,'sim_model');
+% 	wgraph2dot(n,eweight,gfile,[],gvprog,gvdisp);
+% 	fprintf('\n');
+% end
 
 % Save model
 
